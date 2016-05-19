@@ -1,0 +1,14 @@
+<div class="bin-opening-hours-overview">
+    <table class="table table-condensed">
+        <tbody>
+        <tr ng-repeat="day in ctrl.days" ng-class="{'active': day.id == ctrl.currentDay}">
+            <th i18n code="momentx.day.{{::day.id}}.dd" read-only>{{::var}}:</th>
+            <td ng-repeat="slot in day.slots track by slot.id" colspan="{{day.slots.length < 2 && !editing ? '2' : '0'}}"
+                bin-time-slot="slot" for-day="day"></td>
+            <td colspan="2" ng-if="day.slots.length == 0 && !editing">-</td>
+            <td ng-if="day.slots.length < 2 && editing" bin-time-slot for-day="day"></td>
+            <td ng-if="day.slots.length == 0 && editing" bin-time-slot for-day="day"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

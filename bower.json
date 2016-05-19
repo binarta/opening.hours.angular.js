@@ -1,0 +1,30 @@
+{
+  "name": "binarta.opening.hours.angular",
+  "main": [
+    "./src/opening.hours.js",
+    "./src/opening-hours-tpls-bootstrap3.js",
+    "./less/opening-hours.less",
+    "./metadata-system.json"
+  ],
+  "dependencies": {
+    "angular": "1.3.*",
+    "binarta.momentx.angular":"0.*.*",
+    "binarta.notifications.angular": "1.*.*",
+    "binarta.toggle.edit.mode.angular": "1.*.*",
+    "binarta.calendar.events.rest.angular": "0.*.*",
+    "binarta.schedulers.angular": "0.*.*"
+  },
+  "devDependencies": {
+    "angular-mocks": "1.3.*"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "resolutions": {
+    "angular": "1.3.*"
+  }
+}

@@ -1,0 +1,3 @@
+<span i18n code="opening.hours.we.are.now" read-only ng-bind="::var"></span>
+<strong ng-if="ctrl.isOpen != undefined"
+        i18n code="opening.hours.{{ctrl.isOpen ? 'open' : 'closed'}}.sign" watch-on-code read-only ng-bind="var"></strong>

@@ -1,0 +1,44 @@
+{
+  "msgs":{
+    "nl":{
+      "opening.hours.start.label": "Start:",
+      "opening.hours.end.label": "Eind:",
+      "opening.hours.start.invalid": "Ongeldig tijdsformaat (HH:mm), bv. 08:00",
+      "opening.hours.end.invalid": "Ongeldig tijdsformaat (HH:mm), bv. 18:00",
+      "opening.hours.end.lowerbound": "Eindtijd moet later zijn dan de starttijd.",
+      "opening.hours.we.are.now": "Wij zijn nu",
+      "opening.hours.closed.sign": "gesloten",
+      "opening.hours.open.sign": "open"
+    },
+    "en":{
+      "opening.hours.start.label": "Start:",
+      "opening.hours.end.label": "End:",
+      "opening.hours.start.invalid": "Invalid time format (HH:mm), e.g. 08:00",
+      "opening.hours.end.invalid": "Invalid time format (HH:mm), e.g. 18:00",
+      "opening.hours.end.lowerbound": "End time should be later than the start time.",
+      "opening.hours.we.are.now": "We are now",
+      "opening.hours.closed.sign": "closed",
+      "opening.hours.open.sign": "open"
+    },
+    "fr":{
+      "opening.hours.start.label": "Start:",
+      "opening.hours.end.label": "End:",
+      "opening.hours.start.invalid": "Invalid time format (HH:mm), e.g. 08:00",
+      "opening.hours.end.invalid": "Invalid time format (HH:mm), e.g. 18:00",
+      "opening.hours.end.lowerbound": "End time should be later than the start time.",
+      "opening.hours.we.are.now": "We are now",
+      "opening.hours.closed.sign": "closed",
+      "opening.hours.open.sign": "open"
+    },
+    "de":{
+      "opening.hours.start.label": "Start:",
+      "opening.hours.end.label": "End:",
+      "opening.hours.start.invalid": "Invalid time format (HH:mm), e.g. 08:00",
+      "opening.hours.end.invalid": "Invalid time format (HH:mm), e.g. 18:00",
+      "opening.hours.end.lowerbound": "End time should be later than the start time.",
+      "opening.hours.we.are.now": "We are now",
+      "opening.hours.closed.sign": "closed",
+      "opening.hours.open.sign": "open"
+    }
+  }
+}
