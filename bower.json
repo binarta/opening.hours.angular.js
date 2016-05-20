@@ -4,7 +4,8 @@
     "./src/opening.hours.js",
     "./src/opening-hours-tpls-bootstrap3.js",
     "./less/opening-hours.less",
-    "./metadata-system.json"
+    "./metadata-system.json",
+    "./metadata-app.json"
   ],
   "dependencies": {
     "angular": "1.3.*",
