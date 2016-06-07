@@ -9,7 +9,7 @@ angular.module('calendar.events.rest', [])
         return jasmine.createSpy('calendarEventDeleter');
     })
     .service('calendarEventGateway', function (testData) {
-        this.findAllBetweenStartDateAndEndDate = jasmine.createSpy('findAllBetweenStartDateAndEndDate').andCallFake(function (request, response) {
+        this.findAllBetweenStartDateAndEndDate = jasmine.createSpy('findAllBetweenStartDateAndEndDate').and.callFake(function (request, response) {
             response.success(testData);
         });
     })

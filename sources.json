@@ -1,0 +1,6 @@
+{
+  "default": {
+    "opening.hours": "bower_components/binarta.opening.hours.angular/src/opening.hours.js",
+    "opening.hours.templates": "bower_components/binarta.opening.hours.angular/src/opening-hours-tpls-bootstrap3.js"
+  }
+}

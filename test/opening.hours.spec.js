@@ -26,9 +26,9 @@ describe('opening.hours', function () {
             }));
 
             it('events are requested', function () {
-                expect(gateway.findAllBetweenStartDateAndEndDate.calls[0].args[0].type).toEqual('opening hours');
-                expect(gateway.findAllBetweenStartDateAndEndDate.calls[0].args[0].startDate).toBeDefined();
-                expect(gateway.findAllBetweenStartDateAndEndDate.calls[0].args[0].endDate).toBeDefined();
+                expect(gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0].type).toEqual('opening hours');
+                expect(gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0].startDate).toBeDefined();
+                expect(gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0].endDate).toBeDefined();
             });
 
             it('translates to days map with ordered timeslots', function () {
@@ -75,7 +75,7 @@ describe('opening.hours', function () {
             });
 
             it('refresh gets latest data from memory', function () {
-                gateway.findAllBetweenStartDateAndEndDate.reset();
+                gateway.findAllBetweenStartDateAndEndDate.calls.reset();
                 ctrl.refresh();
                 expect(gateway.findAllBetweenStartDateAndEndDate).not.toHaveBeenCalled();
             });
@@ -97,14 +97,20 @@ describe('opening.hours', function () {
                 $scope: $rootScope.$new()
             });
         }));
-        
+
         describe('for day', function () {
             beforeEach(function () {
                 ctrl.day = {
                     id: 1
                 };    
-            });  
-            
+            });
+
+            function formatDate(time) {
+                var dayString = moment().isoWeekday(1).format('YYYY-MM-DD ');
+                var timeString = moment(time).format('HH:mm');
+                return moment(dayString + timeString, 'YYYY-MM-DD HH:mm').toISOString();
+            }
+
             describe('if time-slot is given', function () {
                 beforeEach(function () {
                     ctrl.event = {
@@ -133,7 +139,7 @@ describe('opening.hours', function () {
                         var scope;
 
                         beforeEach(function () {
-                            scope = renderer.open.calls[0].args[0].scope;
+                            scope = renderer.open.calls.first().args[0].scope;
                             scope.form = {};
                         });
 
@@ -162,8 +168,8 @@ describe('opening.hours', function () {
                                 expect(updater).toHaveBeenCalledWith({
                                     type: 'opening hours',
                                     recurrence: 'weekly',
-                                    start: updatedStart.toISOString(),
-                                    end: updatedEnd.toISOString(),
+                                    start: formatDate(updatedStart),
+                                    end: formatDate(updatedEnd),
                                     id: '1',
                                     namespace: 'namespace'
                                 }, scope, {
@@ -173,13 +179,13 @@ describe('opening.hours', function () {
 
                             describe('on success', function () {
                                 beforeEach(function () {
-                                    updater.calls[0].args[2].success();
+                                    updater.calls.first().args[2].success();
                                     $rootScope.$digest();
                                 });
 
                                 it('update local data', function () {
-                                    expect(ctrl.event.start).toEqual(updatedStart.toISOString());
-                                    expect(ctrl.event.end).toEqual(updatedEnd.toISOString());
+                                    expect(ctrl.event.start).toEqual(formatDate(updatedStart));
+                                    expect(ctrl.event.end).toEqual(formatDate(updatedEnd));
                                 });
 
                                 it('renderer is closed', function () {
@@ -199,7 +205,7 @@ describe('opening.hours', function () {
 
                             describe('on success', function () {
                                 beforeEach(function () {
-                                    deleter.calls[0].args[1].success();
+                                    deleter.calls.first().args[1].success();
                                     $rootScope.$digest();
                                 });
 
@@ -230,7 +236,7 @@ describe('opening.hours', function () {
                         var scope;
 
                         beforeEach(function () {
-                            scope = renderer.open.calls[0].args[0].scope;
+                            scope = renderer.open.calls.first().args[0].scope;
                             scope.form = {};
                         });
 
@@ -246,8 +252,8 @@ describe('opening.hours', function () {
                                 expect(writer).toHaveBeenCalledWith({
                                     type: 'opening hours',
                                     recurrence: 'weekly',
-                                    start: moment(start).toISOString(),
-                                    end: moment(end).toISOString()
+                                    start: formatDate(moment(start)),
+                                    end: formatDate(moment(end))
                                 }, scope, {
                                     success: jasmine.any(Function)
                                 });
@@ -255,7 +261,7 @@ describe('opening.hours', function () {
 
                             describe('on success', function () {
                                 beforeEach(function () {
-                                    writer.calls[0].args[2].success('new event');
+                                    writer.calls.first().args[2].success('new event');
                                     $rootScope.$digest();
                                 });
 
@@ -299,7 +305,7 @@ describe('opening.hours', function () {
 
             describe('job is executed', function () {
                 beforeEach(function () {
-                    schedule.forPeriod.calls[0].args[0]();
+                    schedule.forPeriod.calls.first().args[0]();
                     $rootScope.$digest();
                 });
 
@@ -326,7 +332,7 @@ describe('opening.hours', function () {
 
             describe('job is executed', function () {
                 beforeEach(function () {
-                    schedule.forPeriod.calls[0].args[0]();
+                    schedule.forPeriod.calls.first().args[0]();
                     $rootScope.$digest();
                 });
 
