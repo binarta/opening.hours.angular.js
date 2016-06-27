@@ -13,6 +13,30 @@ describe('opening.hours', function () {
         gateway = calendarEventGateway;
     }));
 
+    describe('openingHours service', function () {
+        var service;
+
+        beforeEach(inject(function (openingHours) {
+            service = openingHours;
+        }));
+
+        describe('on getForCurrentWeek', function () {
+            var promise;
+
+            beforeEach(function () {
+                promise = service.getForCurrentWeek();
+            });
+
+            it('request made for current week', function () {
+                var request = gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0];
+
+                expect(request.type).toEqual('opening hours');
+                expect(request.startDate).toEqual(moment().isoWeekday(1).startOf('d'));
+                expect(request.endDate).toEqual(moment().isoWeekday(1).add(7, 'd').startOf('d'));
+            });
+        });
+    });
+
     describe('BinOpeningHoursController', function () {
         var ctrl, data;
 

@@ -20,8 +20,8 @@
             else {
                 var request = {
                     type: 'opening hours',
-                    startDate: moment().isoWeekday(0),
-                    endDate: moment().isoWeekday(7)
+                    startDate: moment().isoWeekday(1).startOf('d'),
+                    endDate: moment().isoWeekday(1).add(7, 'd').startOf('d')
                 };
                 var presenter = {
                     success: function (results) {
