@@ -1,6 +1,6 @@
 (function () {
-    angular.module('opening.hours', ['momentx', 'notifications', 'toggle.edit.mode', 'calendar.events.rest', 'schedulers'])
-        .service('openingHours', ['$q', 'moment', 'calendarEventWriter', 'calendarEventUpdater', 'calendarEventDeleter', 'calendarEventGateway', OpeningHoursService])
+    angular.module('opening.hours', ['momentx', 'notifications', 'toggle.edit.mode', 'calendar.events.rest', 'schedulers', 'application'])
+        .service('openingHours', ['$q', 'moment', 'calendarEventWriter', 'calendarEventUpdater', 'calendarEventDeleter', 'calendarEventGateway', 'applicationDataService', OpeningHoursService])
         .controller('BinOpeningHoursController', ['openingHours', 'moment', BinOpeningHoursController])
         .controller('BinTimeSlotController', ['$scope', '$templateCache', 'moment', 'editModeRenderer', 'openingHours', BinTimeSlotController])
         .controller('BinOpenClosedSignController', ['openingHours', 'moment', 'schedule', BinOpenClosedSignController])
@@ -11,27 +11,31 @@
             openingHours.getForCurrentWeek();
         }]);
     
-    function OpeningHoursService($q, moment, writer, updater, deleter, gateway) {
+    function OpeningHoursService($q, moment, writer, updater, deleter, gateway, applicationData) {
         var events;
 
         this.getForCurrentWeek = function () {
             var deferred = $q.defer();
             if (events) deferred.resolve(events);
             else {
-                var request = {
-                    type: 'opening hours',
-                    startDate: moment().isoWeekday(1).startOf('d'),
-                    endDate: moment().isoWeekday(1).add(7, 'd').startOf('d')
-                };
-                var presenter = {
-                    success: function (results) {
-                        events = results;
-                        deferred.resolve(results);
+                applicationData.then(function (data) {
+                    if (data.openingHours) {
+                        events = data.openingHours;
+                        deferred.resolve(events);
+                    } else {
+                        gateway.findAllBetweenStartDateAndEndDate({
+                            type: 'opening hours',
+                            startDate: moment().isoWeekday(1).startOf('d'),
+                            endDate: moment().isoWeekday(1).add(7, 'd').startOf('d')
+                        }, {
+                            success: function (results) {
+                                events = results;
+                                deferred.resolve(results);
+                            }
+                        });
                     }
-                };
-                gateway.findAllBetweenStartDateAndEndDate(request, presenter);
+                });
             }
-
             return deferred.promise;
         };
         

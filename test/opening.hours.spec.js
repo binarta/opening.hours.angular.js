@@ -1,9 +1,9 @@
 describe('opening.hours', function () {
-    var $rootScope, $q, moment, writer, updater, deleter, gateway;
+    var $rootScope, $q, moment, writer, updater, deleter, gateway, applicationData;
 
     beforeEach(module('opening.hours'));
 
-    beforeEach(inject(function (_$rootScope_, _$q_, _moment_, calendarEventWriter, calendarEventUpdater, calendarEventDeleter, calendarEventGateway) {
+    beforeEach(inject(function (_$rootScope_, _$q_, _moment_, calendarEventWriter, calendarEventUpdater, calendarEventDeleter, calendarEventGateway, applicationDataService) {
         $rootScope = _$rootScope_;
         $q = _$q_;
         moment = _moment_;
@@ -11,28 +11,94 @@ describe('opening.hours', function () {
         updater = calendarEventUpdater;
         deleter = calendarEventDeleter;
         gateway = calendarEventGateway;
+        applicationData = applicationDataService;
+        applicationData.then.and.callFake(function (listener) {
+            listener({});
+        });
     }));
 
     describe('openingHours service', function () {
-        var service;
+        var service, dummyData;
 
         beforeEach(inject(function (openingHours) {
             service = openingHours;
+
+            dummyData = [
+                {
+                    "namespace": "unikamp",
+                    "type": "opening hours",
+                    "id": "14fddc64-490f-4555-9883-ef543275d4fe",
+                    "start": "2016-07-03T07:00:00Z",
+                    "end": "2016-07-03T16:00:00Z"
+                },
+                {
+                    "namespace": "unikamp",
+                    "type": "opening hours",
+                    "id": "1c4354c7-aaa2-4ddb-bfae-4c0775921aa3",
+                    "start": "2016-07-01T07:00:00Z",
+                    "end": "2016-07-01T16:00:00Z"
+                },
+                {
+                    "namespace": "unikamp",
+                    "type": "opening hours",
+                    "id": "49aef6e5-8e13-4cd1-9f50-32b7f5c1d280",
+                    "start": "2016-06-27T07:00:00Z",
+                    "end": "2016-06-27T16:00:00Z"
+                },
+                {
+                    "namespace": "unikamp",
+                    "type": "opening hours",
+                    "id": "807663f2-403e-4511-9179-b0069e2f35a2",
+                    "start": "2016-06-29T07:00:00Z",
+                    "end": "2016-06-29T16:00:00Z"
+                },
+                {
+                    "namespace": "unikamp",
+                    "type": "opening hours",
+                    "id": "c5cac92a-44ab-4cf7-8117-c153f327083d",
+                    "start": "2016-07-02T07:00:00Z",
+                    "end": "2016-07-02T16:00:00Z"
+                },
+                {
+                    "namespace": "unikamp",
+                    "type": "opening hours",
+                    "id": "e1ed56bc-4fd5-410a-b6e5-dca9d4aae395",
+                    "start": "2016-06-28T07:00:00Z",
+                    "end": "2016-06-28T16:00:00Z"
+                }
+            ]
         }));
 
         describe('on getForCurrentWeek', function () {
-            var promise;
+            describe('when opening hours are defined in common data', function () {
+                beforeEach(function () {
+                    applicationData.then.and.callFake(function (listener) {
+                        listener({openingHours: dummyData});
+                    });
+                });
 
-            beforeEach(function () {
-                promise = service.getForCurrentWeek();
+                it('request returns data from common data', function () {
+                    var hours;
+
+                    service.getForCurrentWeek().then(function (result) {
+                        hours = result;
+                    });
+                    $rootScope.$digest();
+
+                    expect(hours).toEqual(dummyData);
+                });
             });
 
-            it('request made for current week', function () {
-                var request = gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0];
+            describe('when opening hours are not defined in common data', function () {
+                it('request made for current week', function () {
+                    service.getForCurrentWeek();
 
-                expect(request.type).toEqual('opening hours');
-                expect(request.startDate).toEqual(moment().isoWeekday(1).startOf('d'));
-                expect(request.endDate).toEqual(moment().isoWeekday(1).add(7, 'd').startOf('d'));
+                    var request = gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0];
+
+                    expect(request.type).toEqual('opening hours');
+                    expect(request.startDate).toEqual(moment().isoWeekday(1).startOf('d'));
+                    expect(request.endDate).toEqual(moment().isoWeekday(1).add(7, 'd').startOf('d'));
+                });
             });
         });
     });
@@ -48,12 +114,6 @@ describe('opening.hours', function () {
             beforeEach(inject(function (testData) {
                 data = testData;
             }));
-
-            it('events are requested', function () {
-                expect(gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0].type).toEqual('opening hours');
-                expect(gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0].startDate).toBeDefined();
-                expect(gateway.findAllBetweenStartDateAndEndDate.calls.first().args[0].endDate).toBeDefined();
-            });
 
             it('translates to days map with ordered timeslots', function () {
                 $rootScope.$digest();
@@ -115,7 +175,8 @@ describe('opening.hours', function () {
         var start = '2016-05-16T08:00:00Z';
         var end = '2016-05-16T10:00:00Z';
         
-        beforeEach(inject(function ($rootScope, $controller, editModeRenderer) {
+        beforeEach(inject(function ($rootScope, $controller, openingHours, editModeRenderer) {
+            openingHours.getForCurrentWeek();
             renderer = editModeRenderer;
             ctrl = $controller('BinTimeSlotController', {
                 $scope: $rootScope.$new()
