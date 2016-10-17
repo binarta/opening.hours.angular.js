@@ -10,12 +10,15 @@
   ],
   "dependencies": {
     "binarta.angularx": "0.*.*",
-    "binarta.momentx.angular":"0.*.*",
+    "binarta.momentx.angular": "0.*.*",
     "binarta.notifications.angular": "1.*.*",
     "binarta.toggle.edit.mode.angular": "1.*.*",
     "binarta.calendar.events.rest.angular": "0.*.*",
     "binarta.schedulers.angular": "0.*.*",
-    "binarta.application.angular": "1.*.*"
+    "binarta.application.angular": "1.*.*",
+    "binarta.config.angular": "0.*.*",
+    "binarta.style.guide": "0.*.*",
+    "binartajs-angular1": "1.*.*"
   },
   "devDependencies": {
     "angular-mocks": "1.*.*"
@@ -26,5 +29,8 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "angular": "1.5.*"
+  }
 }

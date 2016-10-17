@@ -1,16 +1,20 @@
 (function () {
-    angular.module('opening.hours', ['momentx', 'notifications', 'toggle.edit.mode', 'calendar.events.rest', 'schedulers', 'application'])
+    angular.module('opening.hours', ['momentx', 'notifications', 'toggle.edit.mode', 'calendar.events.rest', 'schedulers', 'application', 'config', 'binarta-checkpointjs-angular1'])
         .service('openingHours', ['$q', 'moment', 'calendarEventWriter', 'calendarEventUpdater', 'calendarEventDeleter', 'calendarEventGateway', 'applicationDataService', OpeningHoursService])
-        .controller('BinOpeningHoursController', ['openingHours', 'moment', BinOpeningHoursController])
-        .controller('BinTimeSlotController', ['$scope', '$templateCache', 'moment', 'editModeRenderer', 'openingHours', BinTimeSlotController])
+        .controller('BinOpeningHoursController', ['openingHours', 'moment', 'configReader', 'configWriter', 'topicRegistry', BinOpeningHoursController])
+        .controller('BinTimeSlotController', ['$scope', '$templateCache', 'moment', 'editModeRenderer', 'openingHours', 'binarta', BinTimeSlotController])
         .controller('BinOpenClosedSignController', ['openingHours', 'moment', 'schedule', BinOpenClosedSignController])
         .directive('binOpeningHoursOverview', ['$templateCache', 'ngRegisterTopicHandler', BinOpeningHoursOverviewDirective])
         .directive('binTimeSlot', ['editMode', BinTimeSlotDirective])
         .directive('binOpenClosedSign', ['$templateCache', BinOpenClosedSignDirective])
+        .component('binOpeningHours', {
+            controller: 'BinOpeningHoursController',
+            templateUrl: 'bin-opening-hours-overview.html'
+        })
         .run(['openingHours', function (openingHours) {
             openingHours.getForCurrentWeek();
         }]);
-    
+
     function OpeningHoursService($q, moment, writer, updater, deleter, gateway, applicationData) {
         var events;
 
@@ -38,7 +42,7 @@
             }
             return deferred.promise;
         };
-        
+
         this.update = function (event, scope) {
             var action = event.id ? updater : writer;
             var deferred = $q.defer();
@@ -51,7 +55,7 @@
             action(event, scope, presenter);
             return deferred.promise;
         };
-        
+
         this.delete = function (event) {
             var deferred = $q.defer();
             var presenter = {
@@ -67,17 +71,57 @@
             return deferred.promise;
         }
     }
-    
-    function BinOpeningHoursController(openingHours, moment) {
-        var self = this;
+
+    function BinOpeningHoursController(openingHours, moment, configReader, configWriter, topics) {
+        var ctrl = this;
+        var scope = 'public', statusKey = 'opening.hours.status';
+        var statusVisible = 'visible';
+        var statusHidden = 'hidden';
+        var statusDefault = statusHidden;
+
+        function editModeListener(mode) {
+            ctrl.editing = mode;
+        }
+
+        topics.subscribe('edit.mode', editModeListener);
+
+        configReader({
+            scope: scope,
+            key: statusKey
+        }).then(function (result) {
+            ctrl.status = result.data.value || statusDefault;
+        }, function () {
+            ctrl.status = statusDefault;
+        });
+
+        ctrl.toggle = function () {
+            if (!ctrl.working) {
+                ctrl.working = true;
+                var newStatus = ctrl.status == statusVisible ? statusHidden : statusVisible;
+
+                configWriter({
+                    scope: scope,
+                    key: statusKey,
+                    value: newStatus
+                }).then(function () {
+                    ctrl.status = newStatus;
+                }).finally(function () {
+                    ctrl.working = false;
+                });
+            }
+        };
+
+        ctrl.$onDestroy = function () {
+            topics.unsubscribe('edit.mode', editModeListener);
+        }
 
         this.refresh = getForCurrentWeek;
-        
+
         this.currentDay = moment().isoWeekday();
-        
+
         function getForCurrentWeek() {
             openingHours.getForCurrentWeek().then(function (events) {
-                self.days = mapEventsToDays(events);
+                ctrl.days = mapEventsToDays(events);
             });
         }
 
@@ -119,33 +163,46 @@
         };
     }
 
-    function BinTimeSlotController($scope, $templateCache, moment, editModeRenderer, openingHours) {
+    function BinTimeSlotController($scope, $templateCache, moment, editModeRenderer, openingHours, binarta) {
         var self = this;
-        
+
         this.getTimeSlot = function () {
             return self.event ? formatTime(self.event.start) + ' - ' + formatTime(self.event.end) : '-';
         };
-        
+
         this.onEdit = function () {
             var scope = $scope.$new();
-            scope.day = self.day;
-            
-            if (self.event) {
-                scope.start = moment(self.event.start).toDate();
-                scope.end = moment(self.event.end).toDate();
-                scope.delete = onDelete;
-            }
-
             scope.close = editModeRenderer.close;
 
-            scope.submit = function () {
-                validateForm(scope, onSubmit);
-            };
+            if (binarta.checkpoint.profile.hasPermission('calendar.event.add')) {
 
-            editModeRenderer.open({
-                template: $templateCache.get('bin-edit-time-slot.html'),
-                scope: scope
-            });
+                scope.day = self.day;
+
+                if (self.event) {
+                    scope.start = moment(self.event.start).toDate();
+                    scope.end = moment(self.event.end).toDate();
+                    scope.delete = onDelete;
+                }
+
+
+                scope.submit = function () {
+                    validateForm(scope, onSubmit);
+                };
+
+                editModeRenderer.open({
+                    template: $templateCache.get('bin-edit-time-slot.html'),
+                    scope: scope
+                });
+            }
+            else {
+                editModeRenderer.open({
+                    template: '<div class="bin-menu-edit-body"><p i18n code="opening.hours.permission.denied" read-only></p>' +
+                    '<button type="reset" class="btn btn-default pull-right" ng-click="close()" i18n code="clerk.menu.close.button" read-only ng-bind="::var" ng-disabled="working"></button>' +
+                    '</div>',
+                    scope: scope
+                });
+            }
+
         };
 
         function formatTime(time) {
@@ -203,7 +260,7 @@
             });
         }
     }
-    
+
     function BinTimeSlotDirective(editMode) {
         return {
             restrict: 'A',
@@ -225,12 +282,12 @@
             }
         };
     }
-    
+
     function BinOpenClosedSignController(openingHours, moment, schedule) {
         var self = this;
 
         schedule.forPeriod(checkIfCurrentlyIsOpen, 60000, true);
-        
+
         function checkIfCurrentlyIsOpen() {
             openingHours.getForCurrentWeek().then(function (events) {
                 var now = moment();
@@ -242,7 +299,7 @@
             });
         }
     }
-    
+
     function BinOpenClosedSignDirective($templateCache) {
         return {
             restrict: 'E',
@@ -253,4 +310,6 @@
             template: $templateCache.get('bin-open-closed.html')
         };
     }
+
 })();
+

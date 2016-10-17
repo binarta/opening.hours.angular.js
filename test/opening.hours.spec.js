@@ -1,9 +1,9 @@
 describe('opening.hours', function () {
-    var $rootScope, $q, moment, writer, updater, deleter, gateway, applicationData;
+    var $rootScope, $q, moment, writer, updater, deleter, gateway, applicationData, configReader, configWriter, topics, configReaderDeferred, configWriterDeferred, checkpointGateway;
 
     beforeEach(module('opening.hours'));
 
-    beforeEach(inject(function (_$rootScope_, _$q_, _moment_, calendarEventWriter, calendarEventUpdater, calendarEventDeleter, calendarEventGateway, applicationDataService) {
+    beforeEach(inject(function (_$rootScope_, _$q_, _moment_, calendarEventWriter, calendarEventUpdater, calendarEventDeleter, calendarEventGateway, applicationDataService, _configReader_, _configWriter_, topicRegistry, binartaCheckpointGateway) {
         $rootScope = _$rootScope_;
         $q = _$q_;
         moment = _moment_;
@@ -11,6 +11,19 @@ describe('opening.hours', function () {
         updater = calendarEventUpdater;
         deleter = calendarEventDeleter;
         gateway = calendarEventGateway;
+
+        topics = topicRegistry;
+
+        configReader = _configReader_;
+        configReaderDeferred = $q.defer();
+        configReader.and.returnValue(configReaderDeferred.promise);
+
+        configWriter = _configWriter_;
+        configWriterDeferred = $q.defer();
+        configWriter.and.returnValue(configWriterDeferred.promise);
+
+        checkpointGateway = binartaCheckpointGateway;
+
         applicationData = applicationDataService;
         applicationData.then.and.callFake(function (listener) {
             listener({});
@@ -163,19 +176,158 @@ describe('opening.hours', function () {
                 ctrl.refresh();
                 expect(gateway.findAllBetweenStartDateAndEndDate).not.toHaveBeenCalled();
             });
-            
+
             it('request current day', function () {
                 expect(ctrl.currentDay).toEqual(moment().isoWeekday());
             });
         });
+
+        describe('opening hours widget visibility', function () {
+            var statusKey = 'opening.hours.status';
+
+            beforeEach(inject(function ($controller) {
+                ctrl = $controller('BinOpeningHoursController');
+            }));
+
+
+            it('default widget status is hidden', function () {
+                configReaderDeferred.reject();
+                $rootScope.$digest();
+
+                expect(ctrl.status).toEqual('hidden');
+            });
+
+            it('when widget is hidden', function () {
+                configReaderDeferred.resolve({data: {value: 'hidden'}});
+                $rootScope.$digest();
+
+                expect(ctrl.status).toEqual('hidden');
+            });
+
+            it('when widget is visible', function () {
+                configReaderDeferred.resolve({data: {value: 'visible'}});
+                $rootScope.$digest();
+
+                expect(ctrl.status).toEqual('visible');
+            });
+
+            it('is not working', function () {
+                expect(ctrl.working).toBeFalsy();
+            });
+
+            describe('hide the widget', function () {
+                beforeEach(function () {
+                    configReaderDeferred.resolve({data: {value: 'visible'}});
+                    $rootScope.$digest();
+                    ctrl.toggle();
+                });
+
+                it('is working', function () {
+                    expect(ctrl.working).toBeTruthy();
+                });
+
+                it('persist config value', function () {
+                    expect(configWriter).toHaveBeenCalledWith({
+                        scope: 'public',
+                        key: statusKey,
+                        value: 'hidden'
+                    });
+                });
+
+                it('on success', function () {
+                    configWriterDeferred.resolve();
+                    $rootScope.$digest();
+
+                    expect(ctrl.status).toEqual('hidden');
+                    expect(ctrl.working).toBeFalsy();
+                });
+
+                it('on failed', function () {
+                    configWriterDeferred.reject();
+                    $rootScope.$digest();
+
+                    expect(ctrl.status).toEqual('visible');
+                    expect(ctrl.working).toBeFalsy();
+                });
+            });
+
+            describe('show openings hours widget', function () {
+                beforeEach(function () {
+                    configReaderDeferred.resolve({data: {value: 'hidden'}});
+                    $rootScope.$digest();
+                    ctrl.toggle();
+                });
+
+                it('is working', function () {
+                    expect(ctrl.working).toBeTruthy();
+                });
+
+                it('persist config value', function () {
+                    expect(configWriter).toHaveBeenCalledWith({
+                        scope: 'public',
+                        key: statusKey,
+                        value: 'visible'
+                    });
+                });
+
+                it('on success', function () {
+                    configWriterDeferred.resolve();
+                    $rootScope.$digest();
+
+                    expect(ctrl.status).toEqual('visible');
+                    expect(ctrl.working).toBeFalsy();
+                });
+
+                it('on failed', function () {
+                    configWriterDeferred.reject();
+                    $rootScope.$digest();
+
+                    expect(ctrl.status).toEqual('hidden');
+                    expect(ctrl.working).toBeFalsy();
+                });
+            });
+
+            it('when working, toggle does nothing', function () {
+                ctrl.working = true;
+
+                ctrl.toggle();
+
+                expect(configWriter).not.toHaveBeenCalled();
+            });
+
+            it('listens for edit mode', function () {
+                expect(topics.subscribe.calls.mostRecent().args[0]).toEqual('edit.mode');
+            });
+
+            it('when editing', function () {
+                topics.subscribe.calls.mostRecent().args[1](true);
+
+                expect(ctrl.editing).toBeTruthy();
+
+                topics.subscribe.calls.mostRecent().args[1](false);
+
+                expect(ctrl.editing).toBeFalsy();
+            });
+
+            it('on destroy', function () {
+                var listener = topics.subscribe.calls.mostRecent().args[1];
+
+                ctrl.$onDestroy();
+
+                expect(topics.unsubscribe.calls.mostRecent().args[0]).toEqual('edit.mode');
+                expect(topics.unsubscribe.calls.mostRecent().args[1]).toEqual(listener);
+            });
+
+        });
+
     });
-    
+
     describe('BinTimeSlotController', function () {
         var ctrl, renderer;
         var start = '2016-05-16T08:00:00Z';
         var end = '2016-05-16T10:00:00Z';
-        
-        beforeEach(inject(function ($rootScope, $controller, openingHours, editModeRenderer) {
+
+        beforeEach(inject(function ($rootScope, $controller, openingHours, editModeRenderer, binarta) {
             openingHours.getForCurrentWeek();
             renderer = editModeRenderer;
             ctrl = $controller('BinTimeSlotController', {
@@ -187,7 +339,7 @@ describe('opening.hours', function () {
             beforeEach(function () {
                 ctrl.day = {
                     id: 1
-                };    
+                };
             });
 
             function formatDate(time) {
@@ -196,118 +348,31 @@ describe('opening.hours', function () {
                 return moment(dayString + timeString, 'YYYY-MM-DD HH:mm').toISOString();
             }
 
-            describe('if time-slot is given', function () {
+            describe('if user has no permissions', function () {
+                var scope;
                 beforeEach(function () {
-                    ctrl.event = {
-                        "namespace": "namespace",
-                        "id": "1",
-                        "start": start,
-                        "end": end,
-                        "type": "opening hours"
-                    };
+                    inject(function (binarta) {
+                        binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p'});
+                    })
+                    ctrl.onEdit();
+                    scope = renderer.open.calls.first().args[0].scope;
+                });
+                it('delete is not available', function () {
+                    expect(scope.delete).toBeUndefined();
                 });
 
-                it('get time-slot string', function () {
-                    expect(ctrl.getTimeSlot()).toEqual(moment(start).format('HH:mm') + ' - ' + moment(end).format('HH:mm'));
-                });
-                
-                describe('on edit', function () {
-                    beforeEach(function () {
-                        ctrl.onEdit();
-                    });
-
-                    it('renderer is called', function () {
-                        expect(renderer.open).toHaveBeenCalled();
-                    });
-
-                    describe('with renderer scope', function () {
-                        var scope;
-
-                        beforeEach(function () {
-                            scope = renderer.open.calls.first().args[0].scope;
-                            scope.form = {};
-                        });
-
-                        it('day is on scope', function () {
-                            expect(scope.day.id).toEqual(1);
-                        });
-
-                        it('start and end times are on scope', function () {
-                            expect(scope.start).toEqual(moment(start).toDate());
-                            expect(scope.end).toEqual(moment(end).toDate());
-                        });
-                        
-                        describe('on submit', function () {
-                            var updatedStart, updatedEnd;
-
-                            beforeEach(function () {
-                                updatedStart = moment(start).add(1, 'hour');
-                                updatedEnd = moment(end).add(1, 'hour');
-                                scope.start = updatedStart.toDate();
-                                scope.end = updatedEnd.toDate();
-                                scope.form.$valid = true;
-                                scope.submit();
-                            });
-                            
-                            it('updater is called', function () {
-                                expect(updater).toHaveBeenCalledWith({
-                                    type: 'opening hours',
-                                    recurrence: 'weekly',
-                                    start: formatDate(updatedStart),
-                                    end: formatDate(updatedEnd),
-                                    id: '1',
-                                    namespace: 'namespace'
-                                }, scope, {
-                                    success: jasmine.any(Function)
-                                });
-                            });
-
-                            describe('on success', function () {
-                                beforeEach(function () {
-                                    updater.calls.first().args[2].success();
-                                    $rootScope.$digest();
-                                });
-
-                                it('update local data', function () {
-                                    expect(ctrl.event.start).toEqual(formatDate(updatedStart));
-                                    expect(ctrl.event.end).toEqual(formatDate(updatedEnd));
-                                });
-
-                                it('renderer is closed', function () {
-                                    expect(renderer.close).toHaveBeenCalled();
-                                });
-                            });
-                        });
-
-                        describe('on delete', function () {
-                            beforeEach(function () {
-                                scope.delete();
-                            });
-
-                            it('deleter is called', function () {
-                                expect(deleter).toHaveBeenCalledWith(ctrl.event, {success: jasmine.any(Function)});
-                            });
-
-                            describe('on success', function () {
-                                beforeEach(function () {
-                                    deleter.calls.first().args[1].success();
-                                    $rootScope.$digest();
-                                });
-
-                                it('delete local data', function () {
-                                    expect(ctrl.event).toBeUndefined();
-                                });
-
-                                it('renderer is closed', function () {
-                                    expect(renderer.close).toHaveBeenCalled();
-                                });
-                            });
-                        });
-                    });
+                it('submit is not available', function () {
+                    expect(scope.submit).toBeUndefined();
                 });
             });
-            
-            describe('if no time-slot is given', function () {
+
+            describe('if user has the needed permissions', function () {
+                beforeEach(inject(function (binarta) {
+                    checkpointGateway.addPermission('calendar.event.add');
+                    binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p'});
+                }));
+
+
                 it('get time-slot string', function () {
                     expect(ctrl.getTimeSlot()).toEqual('-');
                 });
@@ -323,6 +388,35 @@ describe('opening.hours', function () {
                         beforeEach(function () {
                             scope = renderer.open.calls.first().args[0].scope;
                             scope.form = {};
+                        });
+
+                        describe('on submit with invalid input', function () {
+                            it('start time format is incorrect', function () {
+                                scope.form.start = {$invalid: true};
+                                scope.form.end = {$invalid: false};
+                                scope.submit();
+                                expect(scope.violations[0]).toEqual('start.invalid');
+                            });
+                            it('end time format is incorrect', function () {
+                                scope.form.start = {$invalid: false};
+                                scope.form.end = {$invalid: true};
+                                scope.submit();
+                                expect(scope.violations[0]).toEqual('end.invalid');
+                            });
+                            it('starttime is later than endtime', function () {
+                                scope.form.start = {$invalid: false};
+                                scope.form.end = {$invalid: true};
+                                scope.form.end.$error = {};
+                                scope.form.end.$error.min = {};
+                                scope.submit();
+                                expect(scope.violations[0]).toEqual('end.lowerbound');
+                            });
+                            it('violations are empty when input is correct', function () {
+                                scope.form.start = {$invalid: false};
+                                scope.form.end = {$invalid: false};
+                                scope.submit();
+                                expect(scope.violations.length).toEqual(0);
+                            });
                         });
 
                         describe('on submit', function () {
@@ -357,7 +451,122 @@ describe('opening.hours', function () {
                         });
                     });
                 });
+
+
+                describe('if time-slot is given', function () {
+                    beforeEach(function () {
+                        ctrl.event = {
+                            "namespace": "namespace",
+                            "id": "1",
+                            "start": start,
+                            "end": end,
+                            "type": "opening hours"
+                        };
+                    });
+
+                    it('get time-slot string', function () {
+                        expect(ctrl.getTimeSlot()).toEqual(moment(start).format('HH:mm') + ' - ' + moment(end).format('HH:mm'));
+                    });
+
+                    describe('on edit', function () {
+                        beforeEach(function () {
+                            ctrl.onEdit();
+                        });
+
+                        it('renderer is called', function () {
+                            expect(renderer.open).toHaveBeenCalled();
+                        });
+
+                        describe('with renderer scope', function () {
+                            var scope;
+
+                            beforeEach(function () {
+                                scope = renderer.open.calls.first().args[0].scope;
+                                scope.form = {};
+                            });
+
+                            it('day is on scope', function () {
+                                expect(scope.day.id).toEqual(1);
+                            });
+
+                            it('start and end times are on scope', function () {
+                                expect(scope.start).toEqual(moment(start).toDate());
+                                expect(scope.end).toEqual(moment(end).toDate());
+                            });
+
+                            describe('on submit', function () {
+                                var updatedStart, updatedEnd;
+
+                                beforeEach(function () {
+                                    updatedStart = moment(start).add(1, 'hour');
+                                    updatedEnd = moment(end).add(1, 'hour');
+                                    scope.start = updatedStart.toDate();
+                                    scope.end = updatedEnd.toDate();
+                                    scope.form.$valid = true;
+                                    scope.submit();
+                                });
+
+                                it('updater is called', function () {
+                                    expect(updater).toHaveBeenCalledWith({
+                                        type: 'opening hours',
+                                        recurrence: 'weekly',
+                                        start: formatDate(updatedStart),
+                                        end: formatDate(updatedEnd),
+                                        id: '1',
+                                        namespace: 'namespace'
+                                    }, scope, {
+                                        success: jasmine.any(Function)
+                                    });
+                                });
+
+                                describe('on success', function () {
+                                    beforeEach(function () {
+                                        updater.calls.first().args[2].success();
+                                        $rootScope.$digest();
+                                    });
+
+                                    it('update local data', function () {
+                                        expect(ctrl.event.start).toEqual(formatDate(updatedStart));
+                                        expect(ctrl.event.end).toEqual(formatDate(updatedEnd));
+                                    });
+
+                                    it('renderer is closed', function () {
+                                        expect(renderer.close).toHaveBeenCalled();
+                                    });
+                                });
+                            });
+
+                            describe('on delete', function () {
+                                beforeEach(function () {
+                                    scope.delete();
+                                });
+
+                                it('deleter is called', function () {
+                                    expect(deleter).toHaveBeenCalledWith(ctrl.event, {success: jasmine.any(Function)});
+                                });
+
+                                describe('on success', function () {
+                                    beforeEach(function () {
+                                        deleter.calls.first().args[1].success();
+                                        $rootScope.$digest();
+                                    });
+
+                                    it('delete local data', function () {
+                                        expect(ctrl.event).toBeUndefined();
+                                    });
+
+                                    it('renderer is closed', function () {
+                                        expect(renderer.close).toHaveBeenCalled();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+
+
             });
+
         });
     });
 

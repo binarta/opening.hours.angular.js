@@ -8,7 +8,10 @@
       "opening.hours.end.lowerbound": "Eindtijd moet later zijn dan de starttijd.",
       "opening.hours.we.are.now": "Wij zijn nu",
       "opening.hours.closed.sign": "gesloten",
-      "opening.hours.open.sign": "open"
+      "opening.hours.open.sign": "open",
+      "opening.hours.show.hours": "Toon openingsuren",
+      "opening.hours.hide.hours": "Verberg openingsuren",
+      "opening.hours.permission.denied": "U heeft niet voldoende rechten om deze operatie uit te voeren."
     },
     "en":{
       "opening.hours.start.label": "Start:",
@@ -18,7 +21,10 @@
       "opening.hours.end.lowerbound": "End time should be later than the start time.",
       "opening.hours.we.are.now": "We are now",
       "opening.hours.closed.sign": "closed",
-      "opening.hours.open.sign": "open"
+      "opening.hours.open.sign": "open",
+      "opening.hours.show.hours": "Show opening hours",
+      "opening.hours.hide.hours": "Hide opening hours",
+      "opening.hours.permission.denied": "Unfortunately, you don't have the needed permission for the action"
     },
     "fr":{
       "opening.hours.start.label": "Start:",
@@ -28,7 +34,9 @@
       "opening.hours.end.lowerbound": "End time should be later than the start time.",
       "opening.hours.we.are.now": "We are now",
       "opening.hours.closed.sign": "closed",
-      "opening.hours.open.sign": "open"
+      "opening.hours.open.sign": "open",
+      "opening.hours.show.hours": "Show opening hours",
+      "opening.hours.hide.hours": "Hide opening hours"
     },
     "de":{
       "opening.hours.start.label": "Start:",
@@ -38,7 +46,9 @@
       "opening.hours.end.lowerbound": "End time should be later than the start time.",
       "opening.hours.we.are.now": "We are now",
       "opening.hours.closed.sign": "closed",
-      "opening.hours.open.sign": "open"
+      "opening.hours.open.sign": "open",
+      "opening.hours.show.hours": "Show opening hours",
+      "opening.hours.hide.hours": "Hide opening hours"
     }
   }
 }

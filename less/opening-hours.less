@@ -1,10 +1,43 @@
-.bin-opening-hours-overview {
-  .table {
-    td, th {
-      border: none;
-    }
-    th {
-      width: 60px;
+@import "../../binarta.style.guide/less/variables";
+bin-opening-hours {
+
+  min-width: 240px;
+
+  .bin-opening-hours-overview {
+    .table {
+      td, th {
+        border: none;
+      }
+      th {
+        width: 60px;
+      }
     }
   }
+
+  .opening-hours-widget{
+    max-width:320px;
+  }
+
+  .opening-hours-btn{
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+
+  @media (max-width: @screen-xs-max) {
+    .opening-hours-widget {
+      display: block;
+    }
+
+    .opening-hours-btn{
+      display:block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  @media (max-width: @screen-xs-min) {
+    margin: 10px auto;
+  }
+
 }
+
