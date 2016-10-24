@@ -4,7 +4,6 @@
         .controller('BinOpeningHoursController', ['openingHours', 'moment', 'configReader', 'configWriter', 'topicRegistry', BinOpeningHoursController])
         .controller('BinTimeSlotController', ['$scope', '$templateCache', 'moment', 'editModeRenderer', 'openingHours', 'binarta', BinTimeSlotController])
         .controller('BinOpenClosedSignController', ['openingHours', 'moment', 'schedule', BinOpenClosedSignController])
-        .directive('binOpeningHoursOverview', ['$templateCache', 'ngRegisterTopicHandler', BinOpeningHoursOverviewDirective])
         .directive('binTimeSlot', ['editMode', BinTimeSlotDirective])
         .directive('binOpenClosedSign', ['$templateCache', BinOpenClosedSignDirective])
         .component('binOpeningHours', {
@@ -143,23 +142,6 @@
 
             return days;
         }
-    }
-
-    function BinOpeningHoursOverviewDirective($templateCache, topics) {
-        return {
-            restrict: 'E',
-            scope: {},
-            controller: 'BinOpeningHoursController',
-            controllerAs: 'ctrl',
-            bindToController: true,
-            template: $templateCache.get('bin-opening-hours-overview.html'),
-            link: function (scope) {
-                topics(scope, 'edit.mode', function (editModeActive) {
-                    if (!editModeActive) scope.ctrl.refresh();
-                    scope.editing = editModeActive;
-                });
-            }
-        };
     }
 
     function BinTimeSlotController($scope, $templateCache, moment, editModeRenderer, openingHours, binarta) {
