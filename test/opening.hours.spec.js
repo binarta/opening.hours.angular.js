@@ -117,15 +117,22 @@ describe('opening.hours', function () {
     });
 
     describe('BinOpeningHoursController', function () {
-        var ctrl, data;
+        var ctrl, data, openingHoursMock, getForCurrentWeekDeferred;
 
-        beforeEach(inject(function ($controller) {
-            ctrl = $controller('BinOpeningHoursController');
+        beforeEach(inject(function ($controller, $q) {
+            openingHoursMock = jasmine.createSpyObj('openingHoursMock', ['getForCurrentWeek']);
+            getForCurrentWeekDeferred = $q.defer();
+            openingHoursMock.getForCurrentWeek.and.returnValue(getForCurrentWeekDeferred.promise);
+
+            ctrl = $controller('BinOpeningHoursController', {
+                openingHours: openingHoursMock
+            });
         }));
 
         describe('with mock data', function () {
             beforeEach(inject(function (testData) {
                 data = testData;
+                getForCurrentWeekDeferred.resolve(data);
             }));
 
             it('translates to days map with ordered timeslots', function () {
@@ -171,12 +178,6 @@ describe('opening.hours', function () {
                 ]);
             });
 
-            it('refresh gets latest data from memory', function () {
-                gateway.findAllBetweenStartDateAndEndDate.calls.reset();
-                ctrl.refresh();
-                expect(gateway.findAllBetweenStartDateAndEndDate).not.toHaveBeenCalled();
-            });
-
             it('request current day', function () {
                 expect(ctrl.currentDay).toEqual(moment().isoWeekday());
             });
@@ -188,7 +189,6 @@ describe('opening.hours', function () {
             beforeEach(inject(function ($controller) {
                 ctrl = $controller('BinOpeningHoursController');
             }));
-
 
             it('default widget status is hidden', function () {
                 configReaderDeferred.reject();
@@ -286,40 +286,46 @@ describe('opening.hours', function () {
                     expect(ctrl.working).toBeFalsy();
                 });
             });
-
-            it('when working, toggle does nothing', function () {
-                ctrl.working = true;
-
-                ctrl.toggle();
-
-                expect(configWriter).not.toHaveBeenCalled();
-            });
-
-            it('listens for edit mode', function () {
-                expect(topics.subscribe.calls.mostRecent().args[0]).toEqual('edit.mode');
-            });
-
-            it('when editing', function () {
-                topics.subscribe.calls.mostRecent().args[1](true);
-
-                expect(ctrl.editing).toBeTruthy();
-
-                topics.subscribe.calls.mostRecent().args[1](false);
-
-                expect(ctrl.editing).toBeFalsy();
-            });
-
-            it('on destroy', function () {
-                var listener = topics.subscribe.calls.mostRecent().args[1];
-
-                ctrl.$onDestroy();
-
-                expect(topics.unsubscribe.calls.mostRecent().args[0]).toEqual('edit.mode');
-                expect(topics.unsubscribe.calls.mostRecent().args[1]).toEqual(listener);
-            });
-
         });
 
+        it('when working, toggle does nothing', function () {
+            ctrl.working = true;
+
+            ctrl.toggle();
+
+            expect(configWriter).not.toHaveBeenCalled();
+        });
+
+        it('listens for edit mode', function () {
+            expect(topics.subscribe.calls.mostRecent().args[0]).toEqual('edit.mode');
+        });
+
+        it('when editing', function () {
+            topics.subscribe.calls.mostRecent().args[1](true);
+
+            expect(ctrl.editing).toBeTruthy();
+
+            topics.subscribe.calls.mostRecent().args[1](false);
+
+            expect(ctrl.editing).toBeFalsy();
+        });
+
+        it('when not editing, refresh events', function () {
+            openingHoursMock.getForCurrentWeek.calls.reset();
+
+            topics.subscribe.calls.mostRecent().args[1](false);
+
+            expect(openingHoursMock.getForCurrentWeek).toHaveBeenCalled();
+        });
+
+        it('on destroy', function () {
+            var listener = topics.subscribe.calls.mostRecent().args[1];
+
+            ctrl.$onDestroy();
+
+            expect(topics.unsubscribe.calls.mostRecent().args[0]).toEqual('edit.mode');
+            expect(topics.unsubscribe.calls.mostRecent().args[1]).toEqual(listener);
+        });
     });
 
     describe('BinTimeSlotController', function () {

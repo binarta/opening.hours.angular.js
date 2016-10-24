@@ -1,4 +1,3 @@
-
 <div class="opening-hours">
     <bin-edit ng-if="$ctrl.status == 'visible'">
         <bin-edit-actions>
@@ -13,7 +12,7 @@
             <div class="bin-opening-hours-overview">
                 <table class="table table-condensed">
                     <tbody>
-                    <tr ng-repeat="day in $ctrl.days" ng-class="{'active': day.id == ctrl.currentDay}">
+                    <tr ng-repeat="day in $ctrl.days" ng-class="{'active': day.id == $ctrl.currentDay}">
                         <th i18n code="momentx.day.{{::day.id}}.dd" read-only>{{::var}}:</th>
                         <td ng-repeat="slot in day.slots track by slot.id" colspan="{{day.slots.length < 2 && ! $ctrl.editing ? '2' : '0'}}"
                             bin-time-slot="slot" for-day="day"></td>
@@ -36,4 +35,3 @@
                 i18n code="opening.hours.show.hours" read-only ng-bind="::var"></button>
     </div>
 </div>
-

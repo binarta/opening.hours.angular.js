@@ -80,6 +80,7 @@
         var statusDefault = statusHidden;
 
         function editModeListener(mode) {
+            if (!mode) getForCurrentWeek();
             ctrl.editing = mode;
         }
 
@@ -113,9 +114,7 @@
 
         ctrl.$onDestroy = function () {
             topics.unsubscribe('edit.mode', editModeListener);
-        }
-
-        this.refresh = getForCurrentWeek;
+        };
 
         this.currentDay = moment().isoWeekday();
 
