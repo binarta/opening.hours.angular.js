@@ -9,23 +9,24 @@
         <bin-edit-body>
             <div class="opening-hours-widget">
                 <h3 class="title" i18n code="opening.hours.title" ng-bind="var"></h3>
-            <div class="bin-opening-hours-overview">
-                <table class="table table-condensed">
-                    <tbody>
-                    <tr ng-repeat="day in $ctrl.days" ng-class="{'active': day.id == $ctrl.currentDay}">
-                        <th i18n code="momentx.day.{{::day.id}}.dd" read-only>{{::var}}:</th>
-                        <td ng-repeat="slot in day.slots track by slot.id" colspan="{{day.slots.length < 2 && ! $ctrl.editing ? '2' : '0'}}"
-                            bin-time-slot="slot" for-day="day"></td>
-                        <td colspan="2" ng-if="day.slots.length == 0 && !$ctrl.editing">-</td>
-                        <td ng-if="day.slots.length < 2 && $ctrl.editing" bin-time-slot for-day="day"></td>
-                        <td ng-if="day.slots.length == 0 && $ctrl.editing" bin-time-slot for-day="day"></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-                <p class="well well-sm" ng-show="var || $ctrl.editing"
-                   i18n code="opening.hours.info" editor="full" ng-bind-html="var">
-                </p>
+                <div class="bin-opening-hours-overview">
+                    <table class="table table-condensed">
+                        <tbody>
+                        <tr ng-repeat="day in $ctrl.days" ng-class="{'active': day.id == $ctrl.currentDay}">
+                            <th i18n code="momentx.day.{{::day.id}}.dd" read-only>{{::var}}:</th>
+                            <td ng-repeat="slot in day.slots track by slot.id"
+                                colspan="{{day.slots.length < 2 && ! $ctrl.editing ? '2' : '0'}}"
+                                bin-time-slot="slot" for-day="day"></td>
+                            <td colspan="2" ng-if="day.slots.length == 0 && !$ctrl.editing">-</td>
+                            <td ng-if="day.slots.length < 2 && $ctrl.editing" bin-time-slot for-day="day"></td>
+                            <td ng-if="day.slots.length == 0 && $ctrl.editing" bin-time-slot for-day="day"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <p class="well well-sm" ng-show="var || $ctrl.editing"
+                       i18n code="opening.hours.info" editor="full" ng-bind-html="var">
+                    </p>
+                </div>
             </div>
         </bin-edit-body>
     </bin-edit>
