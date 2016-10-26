@@ -174,7 +174,7 @@
                 });
             } else {
                 editModeRenderer.open({
-                    template: $templateCache.get('permission-denied-dialog.html'),
+                    template: $templateCache.get('bin-opening-hours-permission-denied.html'),
                     scope: scope
                 });
             }
