@@ -356,13 +356,12 @@ describe('opening.hours', function () {
 
             describe('if user has no permissions', function () {
                 var scope;
-                beforeEach(function () {
-                    inject(function (binarta) {
-                        binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p'});
-                    })
+                beforeEach(inject(function (binarta) {
+                    binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p'});
                     ctrl.onEdit();
                     scope = renderer.open.calls.first().args[0].scope;
-                });
+                }));
+
                 it('delete is not available', function () {
                     expect(scope.delete).toBeUndefined();
                 });
@@ -377,7 +376,6 @@ describe('opening.hours', function () {
                     checkpointGateway.addPermission('calendar.event.add');
                     binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p'});
                 }));
-
 
                 it('get time-slot string', function () {
                     expect(ctrl.getTimeSlot()).toEqual('-');
@@ -397,18 +395,21 @@ describe('opening.hours', function () {
                         });
 
                         describe('on submit with invalid input', function () {
+
                             it('start time format is incorrect', function () {
                                 scope.form.start = {$invalid: true};
                                 scope.form.end = {$invalid: false};
                                 scope.submit();
                                 expect(scope.violations[0]).toEqual('start.invalid');
                             });
+
                             it('end time format is incorrect', function () {
                                 scope.form.start = {$invalid: false};
                                 scope.form.end = {$invalid: true};
                                 scope.submit();
                                 expect(scope.violations[0]).toEqual('end.invalid');
                             });
+
                             it('starttime is later than endtime', function () {
                                 scope.form.start = {$invalid: false};
                                 scope.form.end = {$invalid: true};
@@ -417,6 +418,7 @@ describe('opening.hours', function () {
                                 scope.submit();
                                 expect(scope.violations[0]).toEqual('end.lowerbound');
                             });
+
                             it('violations are empty when input is correct', function () {
                                 scope.form.start = {$invalid: false};
                                 scope.form.end = {$invalid: false};
@@ -427,8 +429,8 @@ describe('opening.hours', function () {
 
                         describe('on submit', function () {
                             beforeEach(function () {
-                                scope.start = new Date(1970, 0, 1, 10, 0, 0);
-                                scope.end = new Date(1970, 0, 1, 12, 0, 0);
+                                scope.start = start;
+                                scope.end = end;
                                 scope.form.$valid = true;
                                 scope.submit();
                             });
@@ -457,7 +459,6 @@ describe('opening.hours', function () {
                         });
                     });
                 });
-
 
                 describe('if time-slot is given', function () {
                     beforeEach(function () {
@@ -569,10 +570,7 @@ describe('opening.hours', function () {
                         });
                     });
                 });
-
-
             });
-
         });
     });
 

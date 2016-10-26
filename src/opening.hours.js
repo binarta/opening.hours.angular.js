@@ -156,7 +156,6 @@
             scope.close = editModeRenderer.close;
 
             if (binarta.checkpoint.profile.hasPermission('calendar.event.add')) {
-
                 scope.day = self.day;
 
                 if (self.event) {
@@ -164,7 +163,6 @@
                     scope.end = moment(self.event.end).toDate();
                     scope.delete = onDelete;
                 }
-
 
                 scope.submit = function () {
                     validateForm(scope, onSubmit);
@@ -174,16 +172,12 @@
                     template: $templateCache.get('bin-edit-time-slot.html'),
                     scope: scope
                 });
-            }
-            else {
+            } else {
                 editModeRenderer.open({
-                    template: '<div class="bin-menu-edit-body"><p i18n code="opening.hours.permission.denied" read-only></p>' +
-                    '<button type="reset" class="btn btn-default pull-right" ng-click="close()" i18n code="clerk.menu.close.button" read-only ng-bind="::var" ng-disabled="working"></button>' +
-                    '</div>',
+                    template: $templateCache.get('permission-denied-dialog.html'),
                     scope: scope
                 });
             }
-
         };
 
         function formatTime(time) {
