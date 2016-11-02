@@ -7,6 +7,7 @@ module.exports = function(config) {
             {pattern:'bower_components/angular-route/angular-route.js'},
             {pattern:'bower_components/angular-mocks/angular-mocks.js'},
             {pattern:'bower_components/moment/moment.js'},
+            {pattern:'bower_components/moment-timezone/builds/moment-timezone-with-data.js'},
             {pattern:'bower_components/binartajs/src/binarta.js'},
             {pattern:'bower_components/binartajs/src/checkpoint.js'},
             {pattern:'bower_components/binartajs/src/gateways.inmem.js'},

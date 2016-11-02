@@ -1,9 +1,9 @@
 describe('opening.hours', function () {
-    var $rootScope, $q, moment, writer, updater, deleter, gateway, applicationData, configReader, configWriter, topics, configReaderDeferred, configWriterDeferred, checkpointGateway;
+    var $rootScope, $q, moment, writer, updater, deleter, gateway, applicationData, configReader, configWriter, topics, configReaderDeferred, configWriterDeferred, checkpointGateway, openingHours;
 
     beforeEach(module('opening.hours'));
 
-    beforeEach(inject(function (_$rootScope_, _$q_, _moment_, calendarEventWriter, calendarEventUpdater, calendarEventDeleter, calendarEventGateway, applicationDataService, _configReader_, _configWriter_, topicRegistry, binartaCheckpointGateway) {
+    beforeEach(inject(function (_$rootScope_, _$q_, _moment_, calendarEventWriter, calendarEventUpdater, calendarEventDeleter, calendarEventGateway, applicationDataService, _configReader_, _configWriter_, topicRegistry, binartaCheckpointGateway, _openingHours_) {
         $rootScope = _$rootScope_;
         $q = _$q_;
         moment = _moment_;
@@ -13,6 +13,8 @@ describe('opening.hours', function () {
         gateway = calendarEventGateway;
 
         topics = topicRegistry;
+
+        openingHours = _openingHours_;
 
         configReader = _configReader_;
         configReaderDeferred = $q.defer();
@@ -81,6 +83,24 @@ describe('opening.hours', function () {
                 }
             ]
         }));
+
+        describe('formatTimeAndDayAsISOString()', function () {
+            it('when current date and time date are in the same timezone', function () {
+                expect(service.formatTimeAndDayAsISOString(
+                    moment('2016-01-01T01:00:00Z'),
+                    moment('1970-01-01T09:00:00Z'),
+                    5
+                )).toEqual('2016-01-01T09:00:00.000Z');
+            });
+
+            it('when current date is in a different timezone from the time date', function () {
+                expect(service.formatTimeAndDayAsISOString(
+                    moment('2016-05-01T01:00:00Z').tz('Europe/Brussels'),
+                    moment('1970-01-01T09:00:00Z'),
+                    7
+                )).toEqual('2016-05-01T09:00:00.000Z');
+            });
+        });
 
         describe('on getForCurrentWeek', function () {
             describe('when opening hours are defined in common data', function () {
@@ -349,9 +369,7 @@ describe('opening.hours', function () {
             });
 
             function formatDate(time) {
-                var dayString = moment().isoWeekday(1).format('YYYY-MM-DD ');
-                var timeString = moment(time).format('HH:mm');
-                return moment(dayString + timeString, 'YYYY-MM-DD HH:mm').toISOString();
+                return openingHours.formatTimeAndDayAsISOString(moment(), moment(time), 1);
             }
 
             describe('if user has no permissions', function () {
@@ -395,7 +413,6 @@ describe('opening.hours', function () {
                         });
 
                         describe('on submit with invalid input', function () {
-
                             it('start time format is incorrect', function () {
                                 scope.form.start = {$invalid: true};
                                 scope.form.end = {$invalid: false};

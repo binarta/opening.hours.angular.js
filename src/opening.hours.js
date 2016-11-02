@@ -17,6 +17,16 @@
     function OpeningHoursService($q, moment, writer, updater, deleter, gateway, applicationData) {
         var events;
 
+        this.formatTimeAndDayAsISOString = function (now, time, day) {
+            var target = now.isoWeekday(day).utc();
+            var utcTime = time.utc();
+            target.hours(utcTime.hours());
+            target.minutes(utcTime.minutes());
+            target.seconds(utcTime.seconds());
+            target.milliseconds(utcTime.milliseconds());
+            return target.toISOString();
+        };
+
         this.getForCurrentWeek = function () {
             var deferred = $q.defer();
             if (events) deferred.resolve(events);
@@ -206,8 +216,8 @@
 
         function onSubmit(scope) {
             scope.violation = undefined;
-            var start = formatDate(scope.start, self.day.id);
-            var end = formatDate(scope.end, self.day.id);
+            var start = openingHours.formatTimeAndDayAsISOString(moment(), moment(scope.start), self.day.id);
+            var end = openingHours.formatTimeAndDayAsISOString(moment(), moment(scope.end), self.day.id);
             var event = {
                 type: 'opening hours',
                 recurrence: 'weekly',
@@ -287,4 +297,3 @@
     }
 
 })();
-
