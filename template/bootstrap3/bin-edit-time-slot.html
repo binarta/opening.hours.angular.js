@@ -30,9 +30,9 @@
     <div class="bin-menu-edit-actions">
         <button type="button" class="btn btn-danger pull-left" ng-click="delete()" ng-if="::delete"
                 i18n code="clerk.menu.remove.button" read-only ng-bind="::var" ng-disabled="working"></button>
-        <button type="reset" class="btn btn-default pull-right" ng-click="close()"
-                i18n code="clerk.menu.cancel.button" read-only ng-bind="::var" ng-disabled="working"></button>
-        <button type="submit" class="btn btn-primary pull-right"
+        <button type="submit" class="btn btn-primary"
                 i18n code="clerk.menu.save.button" read-only ng-bind="::var" ng-disabled="working"></button>
+        <button type="reset" class="btn btn-default" ng-click="close()"
+                i18n code="clerk.menu.cancel.button" read-only ng-bind="::var" ng-disabled="working"></button>
     </div>
 </form>
