@@ -27,16 +27,16 @@
       "opening.hours.permission.denied": "Unfortunately, you don't have the needed permission for the action"
     },
     "fr":{
-      "opening.hours.start.label": "Start:",
-      "opening.hours.end.label": "End:",
-      "opening.hours.start.invalid": "Invalid time format (HH:mm), e.g. 08:00",
-      "opening.hours.end.invalid": "Invalid time format (HH:mm), e.g. 18:00",
-      "opening.hours.end.lowerbound": "End time should be later than the start time.",
-      "opening.hours.we.are.now": "We are now",
-      "opening.hours.closed.sign": "closed",
-      "opening.hours.open.sign": "open",
-      "opening.hours.show.hours": "Show opening hours",
-      "opening.hours.hide.hours": "Hide opening hours"
+      "opening.hours.start.label": "Début:",
+      "opening.hours.end.label": "Fin:",
+      "opening.hours.start.invalid": "Format de temps invalide (HH:mm), par ex. 08:00",
+      "opening.hours.end.invalid": "Format de temps invalide (HH:mm), par ex. 18:00",
+      "opening.hours.end.lowerbound": "L'heure de fin devrait être plus tard que l'heure de début.",
+      "opening.hours.we.are.now": "Nous sommes maintenant",
+      "opening.hours.closed.sign": "fermé",
+      "opening.hours.open.sign": "ouvrir",
+      "opening.hours.show.hours": "Afficher les heures d'ouverture",
+      "opening.hours.hide.hours": "Masquer les heures d'ouverture"
     },
     "de":{
       "opening.hours.start.label": "Start:",
