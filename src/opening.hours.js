@@ -18,12 +18,11 @@
         var events;
 
         this.formatTimeAndDayAsISOString = function (now, time, day) {
-            var target = now.isoWeekday(day).utc();
-            var utcTime = time.utc();
-            target.hours(utcTime.hours());
-            target.minutes(utcTime.minutes());
-            target.seconds(utcTime.seconds());
-            target.milliseconds(utcTime.milliseconds());
+            var target = now.isoWeekday(day);
+            target.hours(time.hours());
+            target.minutes(time.minutes());
+            target.seconds(time.seconds());
+            target.milliseconds(time.milliseconds());
             return target.toISOString();
         };
 

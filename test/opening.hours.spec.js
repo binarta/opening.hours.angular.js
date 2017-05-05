@@ -85,20 +85,28 @@ describe('opening.hours', function () {
         }));
 
         describe('formatTimeAndDayAsISOString()', function () {
-            it('when current date and time date are in the same timezone', function () {
-                expect(service.formatTimeAndDayAsISOString(
-                    moment('2016-01-01T01:00:00Z'),
-                    moment('1970-01-01T09:00:00Z'),
-                    5
-                )).toEqual('2016-01-01T09:00:00.000Z');
+            var selectedTime, nowInSameDST, nowInDifferentDST;
+
+            beforeEach(function () {
+                selectedTime = moment('1970-01-01T09:00:00Z').tz('Europe/Brussels');
+                nowInSameDST = moment('2016-01-01T01:00:00Z').tz('Europe/Brussels');
+                nowInDifferentDST = moment('2017-05-01T01:00:00Z').tz('Europe/Brussels');
             });
 
-            it('when current date is in a different timezone from the time date', function () {
-                expect(service.formatTimeAndDayAsISOString(
-                    moment('2016-05-01T01:00:00Z').tz('Europe/Brussels'),
-                    moment('1970-01-01T09:00:00Z'),
-                    7
-                )).toEqual('2016-05-01T09:00:00.000Z');
+            it("given we selected 10 o'clock", function () {
+                expect(selectedTime.hours()).toEqual(10);
+            });
+
+            it('when current date and selected time date are in the same DST', function () {
+                expect(
+                    service.formatTimeAndDayAsISOString(nowInSameDST, selectedTime, 5)
+                ).toEqual('2016-01-01T09:00:00.000Z');
+            });
+
+            it('when current date is in a different DST from the time date', function () {
+                expect(
+                    service.formatTimeAndDayAsISOString(nowInDifferentDST, selectedTime, 7)
+                ).toEqual('2017-05-07T08:00:00.000Z');
             });
         });
 
