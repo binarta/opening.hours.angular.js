@@ -36,7 +36,8 @@
       "opening.hours.closed.sign": "fermé",
       "opening.hours.open.sign": "ouvrir",
       "opening.hours.show.hours": "Afficher les heures d'ouverture",
-      "opening.hours.hide.hours": "Masquer les heures d'ouverture"
+      "opening.hours.hide.hours": "Masquer les heures d'ouverture",
+      "opening.hours.permission.denied": "Unfortunately, you don't have the needed permission for the action"
     },
     "de":{
       "opening.hours.start.label": "Start:",
@@ -48,7 +49,8 @@
       "opening.hours.closed.sign": "closed",
       "opening.hours.open.sign": "open",
       "opening.hours.show.hours": "Show opening hours",
-      "opening.hours.hide.hours": "Hide opening hours"
+      "opening.hours.hide.hours": "Hide opening hours",
+      "opening.hours.permission.denied": "Unfortunately, you don't have the needed permission for the action"
     }
   }
 }
