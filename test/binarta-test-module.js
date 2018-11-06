@@ -1,4 +1,5 @@
 (function() {
+    angular.module('binarta-alljs-tpls-angular1', []);
     angular.module('binarta-checkpointjs-gateways-angular1', ['binarta-checkpointjs-inmem-angular1'])
         .provider('binartaCheckpointGateway', ['inmemBinartaCheckpointGatewayProvider', proxy]);
     function proxy(gateway) {
