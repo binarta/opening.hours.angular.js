@@ -1,11 +1,14 @@
 <div class="opening-hours">
     <bin-edit ng-if="$ctrl.status === 'visible'">
-        <bin-edit-actions>
-            <bin-edit-action action="$ctrl.toggle()"
-                             icon-class="fa-eye-slash"
-                             i18n-code="opening.hours.hide.hours">
-            </bin-edit-action>
-        </bin-edit-actions>
+        <bin-actions>
+            <bin-action-group>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.toggle()"
+                            bin-action-icon-class="fa-eye-slash"
+                            bin-action-i18n-code="opening.hours.hide.hours">
+                </bin-action>
+            </bin-action-group>
+        </bin-actions>
         <bin-edit-body>
             <div class="opening-hours-widget">
                 <h3 class="title" i18n code="opening.hours.title" ng-bind="var"></h3>
