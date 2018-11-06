@@ -10,7 +10,6 @@
   ],
   "dependencies": {
     "binarta.angularx": "0.*.*",
-    "binarta.edit.angular": "^1.0.0",
     "binarta.momentx.angular": "0.*.*",
     "binarta.notifications.angular": "1.*.*",
     "binarta.toggle.edit.mode.angular": "1.*.*",
