@@ -20,7 +20,9 @@
                             <td ng-repeat="slot in day.slots track by slot.id"
                                 colspan="{{day.slots.length < 2 && ! $ctrl.editing ? '2' : '0'}}"
                                 bin-time-slot="slot" for-day="day"></td>
-                            <td colspan="2" ng-if="day.slots.length == 0 && !$ctrl.editing">-</td>
+                            <td colspan="2" ng-if="day.slots.length == 0 && !$ctrl.editing"
+                                i18n code="opening.hours.closed.sign" read-only ng-bind="::var">
+                            </td>
                             <td ng-if="day.slots.length < 2 && $ctrl.editing" bin-time-slot for-day="day"></td>
                             <td ng-if="day.slots.length == 0 && $ctrl.editing" bin-time-slot for-day="day"></td>
                         </tr>
