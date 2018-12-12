@@ -15,7 +15,7 @@
                 <div class="bin-opening-hours-overview">
                     <table class="table table-condensed">
                         <tbody>
-                        <tr ng-repeat="day in $ctrl.days" ng-class="{'active': day.id == $ctrl.currentDay}">
+                        <tr ng-repeat="day in $ctrl.days" ng-class="{'success': day.id == $ctrl.currentDay}">
                             <th i18n code="momentx.day.{{::day.id}}.dd" read-only>{{::var}}:</th>
                             <td ng-repeat="slot in day.slots track by slot.id"
                                 colspan="{{day.slots.length < 2 && ! $ctrl.editing ? '2' : '0'}}"
