@@ -2,7 +2,7 @@
     angular.module('opening.hours', ['momentx', 'notifications', 'toggle.edit.mode', 'calendar.events.rest', 'schedulers', 'application', 'config', 'binarta-checkpointjs-angular1'])
         .service('openingHours', ['$q', 'moment', 'calendarEventWriter', 'calendarEventUpdater', 'calendarEventDeleter', 'calendarEventGateway', 'applicationDataService', OpeningHoursService])
         .controller('BinOpeningHoursController', ['openingHours', 'moment', 'configReader', 'configWriter', 'topicRegistry', BinOpeningHoursController])
-        .controller('BinTimeSlotController', ['$scope', '$templateCache', 'moment', 'editModeRenderer', 'openingHours', 'binarta', BinTimeSlotController])
+        .controller('BinTimeSlotController', ['$scope', '$templateCache', '$timeout', 'moment', 'editModeRenderer', 'openingHours', 'binarta', BinTimeSlotController])
         .controller('BinOpenClosedSignController', ['openingHours', 'moment', 'schedule', BinOpenClosedSignController])
         .directive('binTimeSlot', ['editMode', BinTimeSlotDirective])
         .directive('binOpenClosedSign', ['$templateCache', BinOpenClosedSignDirective])
@@ -153,7 +153,7 @@
         }
     }
 
-    function BinTimeSlotController($scope, $templateCache, moment, editModeRenderer, openingHours, binarta) {
+    function BinTimeSlotController($scope, $templateCache, $timeout, moment, editModeRenderer, openingHours, binarta) {
         var self = this;
 
         this.getTimeSlot = function () {
@@ -202,16 +202,18 @@
                 scope.form.end.$invalid = true;
                 scope.form.end.$error = {min: true};
             }
-            
+
             if (scope.form.$valid) onValid(scope);
             else {
-                var startField = scope.form.start;
-                var endField = scope.form.end;
-                if (startField.$invalid) scope.violations.push('start.invalid');
-                if (endField.$invalid) {
-                    if (endField.$error && endField.$error.min) scope.violations.push('end.lowerbound');
-                    else scope.violations.push('end.invalid');
-                }
+                $timeout(function () {
+                    var startField = scope.form.start;
+                    var endField = scope.form.end;
+                    if (startField.$invalid) scope.violations.push('start.invalid');
+                    if (endField.$invalid) {
+                        if (endField.$error && endField.$error.min) scope.violations.push('end.lowerbound');
+                        else scope.violations.push('end.invalid');
+                    }
+                });
             }
         }
 

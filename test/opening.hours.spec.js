@@ -357,13 +357,14 @@ describe('opening.hours', function () {
     });
 
     describe('BinTimeSlotController', function () {
-        var ctrl, renderer;
+        var ctrl, renderer, timeout;
         var start = '2016-05-16T08:00:00Z';
         var end = '2016-05-16T10:00:00Z';
 
-        beforeEach(inject(function ($rootScope, $controller, openingHours, editModeRenderer, binarta) {
+        beforeEach(inject(function ($rootScope, $controller, openingHours, editModeRenderer, $timeout) {
             openingHours.getForCurrentWeek();
             renderer = editModeRenderer;
+            timeout = $timeout;
             ctrl = $controller('BinTimeSlotController', {
                 $scope: $rootScope.$new()
             });
@@ -439,6 +440,7 @@ describe('opening.hours', function () {
                                 scope.form.start.$invalid = true;
                                 scope.form.end.$invalid = false;
                                 scope.submit();
+                                timeout.flush();
                                 expect(scope.violations[0]).toEqual('start.invalid');
                             });
 
@@ -447,18 +449,21 @@ describe('opening.hours', function () {
                                 scope.form.start.$invalid = false;
                                 scope.form.end.$invalid = true;
                                 scope.submit();
+                                timeout.flush();
                                 expect(scope.violations[0]).toEqual('end.invalid');
                             });
 
                             it('starttime is later than endtime', function () {
                                 scope.end.hours(2);
                                 scope.submit();
+                                timeout.flush();
                                 expect(scope.violations[0]).toEqual('end.lowerbound');
                             });
 
                             it('starttime is equal to endtime', function () {
                                 scope.end.hours(4);
                                 scope.submit();
+                                timeout.flush();
                                 expect(scope.violations[0]).toEqual('end.lowerbound');
                             });
 
