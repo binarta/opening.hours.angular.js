@@ -81,10 +81,10 @@ describe('opening.hours', function () {
                     "start": "2016-06-28T07:00:00Z",
                     "end": "2016-06-28T16:00:00Z"
                 }
-            ]
+            ];
         }));
 
-        describe('formatTimeAndDayAsISOString()', function () {
+        describe('formatTimeAndDay()', function () {
             var selectedTime, nowInSameDST, nowInDifferentDST;
 
             beforeEach(function () {
@@ -99,13 +99,13 @@ describe('opening.hours', function () {
 
             it('when current date and selected time date are in the same DST', function () {
                 expect(
-                    service.formatTimeAndDayAsISOString(nowInSameDST, selectedTime, 5)
+                    service.formatTimeAndDay(nowInSameDST, selectedTime, 5).toISOString()
                 ).toEqual('2016-01-01T09:00:00.000Z');
             });
 
             it('when current date is in a different DST from the time date', function () {
                 expect(
-                    service.formatTimeAndDayAsISOString(nowInDifferentDST, selectedTime, 7)
+                    service.formatTimeAndDay(nowInDifferentDST, selectedTime, 7).toISOString()
                 ).toEqual('2017-05-07T08:00:00.000Z');
             });
         });
@@ -377,7 +377,7 @@ describe('opening.hours', function () {
             });
 
             function formatDate(time) {
-                return openingHours.formatTimeAndDayAsISOString(moment(), moment(time), 1);
+                return openingHours.formatTimeAndDay(moment(), moment(time), 1).toISOString();
             }
 
             describe('if user has no permissions', function () {
@@ -417,29 +417,47 @@ describe('opening.hours', function () {
 
                         beforeEach(function () {
                             scope = renderer.open.calls.first().args[0].scope;
+                            scope.start = moment();
+                            scope.start.hours(4);
+                            scope.start.minutes(0);
+                            scope.start.seconds(0);
+                            scope.start.milliseconds(0);
+                            scope.end = moment();
+                            scope.end.hours(6);
+                            scope.end.minutes(0);
+                            scope.end.seconds(0);
+                            scope.end.milliseconds(0);
                             scope.form = {};
+                            scope.form.$valid = true;
+                            scope.form.start = { $invalid: false };
+                            scope.form.end = { $invalid: false };
                         });
 
                         describe('on submit with invalid input', function () {
                             it('start time format is incorrect', function () {
-                                scope.form.start = {$invalid: true};
-                                scope.form.end = {$invalid: false};
+                                scope.form.$valid = false;
+                                scope.form.start.$invalid = true;
+                                scope.form.end.$invalid = false;
                                 scope.submit();
                                 expect(scope.violations[0]).toEqual('start.invalid');
                             });
 
                             it('end time format is incorrect', function () {
-                                scope.form.start = {$invalid: false};
-                                scope.form.end = {$invalid: true};
+                                scope.form.$valid = false;                                
+                                scope.form.start.$invalid = false;
+                                scope.form.end.$invalid = true;
                                 scope.submit();
                                 expect(scope.violations[0]).toEqual('end.invalid');
                             });
 
                             it('starttime is later than endtime', function () {
-                                scope.form.start = {$invalid: false};
-                                scope.form.end = {$invalid: true};
-                                scope.form.end.$error = {};
-                                scope.form.end.$error.min = {};
+                                scope.end.hours(2);
+                                scope.submit();
+                                expect(scope.violations[0]).toEqual('end.lowerbound');
+                            });
+
+                            it('starttime is equal to endtime', function () {
+                                scope.end.hours(4);
                                 scope.submit();
                                 expect(scope.violations[0]).toEqual('end.lowerbound');
                             });
@@ -449,6 +467,43 @@ describe('opening.hours', function () {
                                 scope.form.end = {$invalid: false};
                                 scope.submit();
                                 expect(scope.violations.length).toEqual(0);
+                            });
+                        });
+
+                        describe('on submit with end time 00:00', function () {
+                            var start, end;
+
+                            beforeEach(function () {
+                                scope.start = moment();
+                                scope.start.hours(3);
+                                scope.start.minutes(0);
+                                scope.start.seconds(0);
+                                scope.start.milliseconds(0);
+                                scope.end = moment();
+                                scope.end.hours(0);
+                                scope.end.minutes(0);
+                                scope.end.seconds(0);
+                                scope.end.milliseconds(0);
+                                scope.form.$valid = true;
+                                start = openingHours.formatTimeAndDay(moment(), moment(scope.start), 1);
+                                end = openingHours.formatTimeAndDay(moment(), moment(scope.end), 1).add(1, 'd');
+                                scope.submit();
+                            });
+
+                            it('check formatted time', function () {  
+                                expect(scope.formattedStart).toEqual(start);
+                                expect(scope.formattedEnd).toEqual(end);
+                            });
+
+                            it('writer is called', function () {
+                                expect(writer).toHaveBeenCalledWith({
+                                    type: 'opening hours',
+                                    recurrence: 'weekly',
+                                    start: start.toISOString(),
+                                    end: end.toISOString()
+                                }, scope, {
+                                    success: jasmine.any(Function)
+                                });
                             });
                         });
 

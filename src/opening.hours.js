@@ -17,13 +17,13 @@
     function OpeningHoursService($q, moment, writer, updater, deleter, gateway, applicationData) {
         var events;
 
-        this.formatTimeAndDayAsISOString = function (now, time, day) {
+        this.formatTimeAndDay = function (now, time, day) {
             var target = now.isoWeekday(day);
             target.hours(time.hours());
             target.minutes(time.minutes());
             target.seconds(time.seconds());
             target.milliseconds(time.milliseconds());
-            return target.toISOString();
+            return target;
         };
 
         this.getForCurrentWeek = function () {
@@ -77,7 +77,7 @@
             };
             deleter(event, presenter);
             return deferred.promise;
-        }
+        };
     }
 
     function BinOpeningHoursController(openingHours, moment, configReader, configWriter, topics) {
@@ -140,7 +140,7 @@
                 days.push({
                     id: i,
                     slots: []
-                })
+                });
             }
 
             angular.forEach(events, function (event) {
@@ -174,6 +174,7 @@
                 }
 
                 scope.submit = function () {
+                    formatStartAndEndTime(scope);
                     validateForm(scope, onSubmit);
                 };
 
@@ -193,14 +194,15 @@
             return moment(time).format('HH:mm');
         }
 
-        function formatDate(time, day) {
-            var dayString = moment().isoWeekday(day).format('YYYY-MM-DD ');
-            var timeString = moment(time).format('HH:mm');
-            return moment(dayString + timeString, 'YYYY-MM-DD HH:mm').toISOString();
-        }
-
         function validateForm(scope, onValid) {
             scope.violations = [];
+            
+            if (scope.formattedEnd <= scope.formattedStart) {
+                scope.form.$valid = false;
+                scope.form.end.$invalid = true;
+                scope.form.end.$error = {min: true};
+            }
+            
             if (scope.form.$valid) onValid(scope);
             else {
                 var startField = scope.form.start;
@@ -213,10 +215,16 @@
             }
         }
 
+        function formatStartAndEndTime(scope) {
+            scope.formattedStart = openingHours.formatTimeAndDay(moment(), moment(scope.start), self.day.id);
+            scope.formattedEnd = openingHours.formatTimeAndDay(moment(), moment(scope.end), self.day.id);
+            if (scope.formattedEnd.hours() == 0 && scope.formattedEnd.minutes() == 0) scope.formattedEnd.add(1, 'd');
+        }
+
         function onSubmit(scope) {
             scope.violation = undefined;
-            var start = openingHours.formatTimeAndDayAsISOString(moment(), moment(scope.start), self.day.id);
-            var end = openingHours.formatTimeAndDayAsISOString(moment(), moment(scope.end), self.day.id);
+            var start = scope.formattedStart.toISOString();
+            var end = scope.formattedEnd.toISOString();
             var event = {
                 type: 'opening hours',
                 recurrence: 'weekly',
